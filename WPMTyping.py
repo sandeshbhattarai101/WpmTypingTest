@@ -1,6 +1,7 @@
 import curses
 from curses import wrapper
 import time
+import random
 
 
 def start_screen(stdscr):
@@ -22,9 +23,15 @@ def display_text(stdscr, target, current, wpm=0):
 
         stdscr.addstr(0, i, char, color)
 
+def load_text():
+    with open("text.txt", "r") as f:
+        lines = f.readlines()
+        return random.choice(lines).strip()
+    #.strip() will remove \n from end of the line which evry line has to identify its the end of the text
+
 
 def wpm_test(stdscr):
-    target_text = "Hello world this is some test text for this app!"
+    target_text = load_text()
     current_text = []
     wpm = 0
     start_time = time.time()
@@ -42,6 +49,11 @@ def wpm_test(stdscr):
         stdscr.clear()
         display_text(stdscr, target_text, current_text, wpm)
         stdscr.refresh()
+
+        #current is list and target is string and we will convert current into string with "".join()
+        if "".join(current_text) == target_text:
+            stdscr.nodelay(False)
+            break
 
         try:
             key = stdscr.getkey()
@@ -68,9 +80,14 @@ def main(stdscr):
     curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
     start_screen(stdscr)
-    wpm_test(stdscr)
 
-    time.sleep(5)
+    while True:
+        wpm_test(stdscr)
+        stdscr.addstr(2, 0, "You have completed the text! Press any key to continue...")
+        key = stdscr.getkey()
+    
+        if ord(key) == 27:
+            break
 
 wrapper(main)
 
